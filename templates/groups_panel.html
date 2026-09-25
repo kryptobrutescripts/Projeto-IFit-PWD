@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}iFit+ - Grupos{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="card">
+    <div class="card-header">
+        <h3>Painel de Grupos</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <a href="{{ url_for('meus_grupos') }}" class="btn btn-primary" style="padding: 30px; font-size: 1.1rem; flex-direction: column;">
+                Meus Grupos
+            </a>
+            <a href="{{ url_for('associar_grupo') }}" class="btn btn-success" style="padding: 30px; font-size: 1.1rem; flex-direction: column;">
+                Participar de Grupo
+            </a>
+            <a href="{{ url_for('criar_grupo') }}" class="btn btn-primary" style="padding: 30px; font-size: 1.1rem; flex-direction: column; background: #8e44ad;">
+                Criar Grupo
+            </a>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">
+        <h3>Recomendações de Grupos</h3>
+    </div>
+    <div class="card-body">
+        {% if recommended_groups %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                {% for group in recommended_groups %}
+                    <div class="ranking-card" style="flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 0;">
+                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                            <div class="avatar-small" style="width: 50px; height: 50px; background: var(--accent-light); color: var(--accent); font-size: 1.2rem; font-weight: 700; border: 2px solid var(--accent);">
+                                {{ group.name[0]|upper }}
+                            </div>
+                            <div class="ranking-info">
+                                <div class="ranking-name" style="font-size: 1.1rem;">{{ group.name }}</div>
+                                <div class="ranking-username">{{ group.description or 'Sem descrição' }}</div>
+                                <div class="ranking-stats">
+                                    {{ group.members|length }} Membros
+                                    <span class="ranking-separator">•</span>
+                                    Criado por: {{ group.creator.display_name }}
+                                </div>
+                            </div>
+                        </div>
+                        <form action="{{ url_for('associar_grupo') }}" method="POST" style="width: 100%;">
+                            <input type="hidden" name="group_id" value="{{ group.id }}">
+                            <button type="submit" class="btn btn-success btn-small" style="width: 100%;">
+                                Participar
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-message">
+                Nenhuma recomendação disponível no momento
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}iFit+ - Membros - {{ group.name }}{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="card">
+    <div class="card-header">
+        <h3>{{ group.name }} - Membros</h3>
+        <a href="{{ url_for('meus_grupos') }}" class="nav-link">← Voltar</a>
+    </div>
+    <div class="card-body">
+        <p style="color: var(--text-muted); margin-bottom: 16px;">
+            Total de Membros: {{ members_with_position|length }}
+        </p>
+        {% for item in members_with_position %}
+            <div class="ranking-card">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                    <div style="position: relative; display: inline-block;">
+                        {% if item.user.photo %}
+                            <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); overflow: hidden;">
+                                <img src="{{ url_for('static', filename='images/user_images/' + item.user.photo) }}" alt="{{ item.user.display_name }}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                        {% else %}
+                            <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; background: var(--bg-page); overflow: hidden;">
+                                <img src="{{ url_for('static', filename='images/user_default.ico') }}"
+                                    alt="Usuário"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        {% endif %}
+                        <div class="level-badge" style="position: absolute; bottom: -4px; right: -4px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-surface);">
+                            #{{ item.position if item.position else '?' }}
+                        </div>
+                    </div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">{{ item.user.display_name }}</div>
+                        <div class="ranking-username">@{{ item.user.username }} • {{ item.user.gender or 'Não informado' }}</div>
+                    </div>
+                </div>
+                {% if item.user.id == user.id %}
+                    <span class="badge-voce">Você</span>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="empty-message">
+                <span class="empty-icon"></span>
+                Nenhum membro neste grupo
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

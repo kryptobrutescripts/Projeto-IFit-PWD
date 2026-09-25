@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IFit+{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/contact/ifit.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20260913') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer"><span>© 2026 - IFit+</span></div>
+    <script>
+        document.querySelectorAll('.alert').forEach(function(alerta) {
+            setTimeout(function() { alerta.style.transition='opacity 0.5s ease, transform 0.5s ease'; alerta.style.opacity='0'; alerta.style.transform='translateY(-4px)'; setTimeout(function(){alerta.remove();},500); },4000);
+        });
+    </script>
+    <script src="{{ url_for('static', filename='javascript/particles.js', v='20260913') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/modals.js', v='20260913') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/script.js', v='20260913') }}"></script>
+</body>
+</html>

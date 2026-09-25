@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}IFit+ - Estatísticas{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_activities }}</div>
+        <div class="stat-label">Total de Atividades</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_distance }} km</div>
+        <div class="stat-label">Distância Total</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_duration }} min</div>
+        <div class="stat-label">Tempo Total</div>
+    </div>
+</div>
+{% if stats.total_activities > 0 %}
+<div class="stats-charts-grid">
+    <div class="card stats-chart-card">
+        <div class="card-header">
+            <h3>Atividades por Categoria</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="categoryChart" class="stats-chart-canvas"></canvas>
+            <div id="customLegend" class="stats-legend"></div>
+        </div>
+    </div>
+    <div class="card stats-chart-card">
+        <div class="card-header">
+            <h3>Distância por Atividade</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="distanceCategoryChart" class="stats-chart-canvas"></canvas>
+            <div id="distanceLegend" class="stats-legend"></div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card stats-empty-card">
+    <div class="card-body stats-empty-message">
+        <h3>Nenhuma atividade registrada. Realize uma atividade primeiro para visualizar seus gráficos.</h3>
+    </div>
+</div>
+{% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('categoryChart') === null) return;
+    fetch('{{ url_for("api_activities_by_category") }}')
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            var colors = data.map(function (item) { return item.color; });
+            var labels = data.map(function (item) { return item.name; });
+            var counts = data.map(function (item) { return Number(item.count) || 0; });
+            var distances = data.map(function (item) { return Number(item.distance) || 0; });
+            var isDark = document.documentElement.classList.contains('dark-mode');
+            var chartBorderColor = isDark ? '#1a1a2e' : '#ffffff';
+            function legendTextColor(color, category) {
+                if (category === 'swimming') return '#ffffff';
+                var value = color.replace('#', '');
+                var r = parseInt(value.substring(0, 2), 16);
+                var g = parseInt(value.substring(2, 4), 16);
+                var b = parseInt(value.substring(4, 6), 16);
+                var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                return luminance > 0.64 ? '#000000' : '#ffffff';
+            }
+            var categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts.slice(),
+                        backgroundColor: colors,
+                        borderColor: chartBorderColor,
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '52%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+            var visible = data.map(function () { return true; });
+            var legendContainer = document.getElementById('customLegend');
+            function updateCategoryLegend() {
+                var visibleTotal = data.reduce(function (sum, item, index) {
+                    return sum + (visible[index] ? (Number(item.count) || 0) : 0);
+                }, 0);
+                data.forEach(function (item, index) {
+                    var card = legendContainer.children[index];
+                    if (!card) return;
+                    var value = visible[index] ? (Number(item.count) || 0) : 0;
+                    var percentage = visibleTotal > 0 ? Math.round((value / visibleTotal) * 100) : 0;
+                    card.querySelector('strong').textContent = percentage + '%';
+                    card.classList.toggle('is-hidden', !visible[index]);
+                });
+            }
+            data.forEach(function (item, index) {
+                var card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'stats-legend-item';
+                card.style.background = colors[index];
+                card.style.color = legendTextColor(colors[index], item.category);
+                card.innerHTML = '<span>' + item.name + '</span><strong>0%</strong>';
+                card.addEventListener('click', function () {
+                    visible[index] = !visible[index];
+                    categoryChart.data.datasets[0].data = counts.map(function (value, i) { return visible[i] ? value : 0; });
+                    categoryChart.update();
+                    updateCategoryLegend();
+                });
+                legendContainer.appendChild(card);
+            });
+            updateCategoryLegend();
+            var distanceChart = new Chart(document.getElementById('distanceCategoryChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: distances.slice(),
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.72,
+                        categoryPercentage: 0.72
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(), font: { size: 11, weight: '700' } },
+                            grid: { display: false },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(), font: { size: 11, weight: '700' }, callback: function (value) { return value + ' km'; } },
+                            grid: { color: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)' },
+                            border: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+            var distanceLegend = document.getElementById('distanceLegend');
+            var distanceVisible = data.map(function () { return true; });
+            data.forEach(function (item, index) {
+                var card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'stats-legend-item';
+                card.style.background = colors[index];
+                card.style.color = legendTextColor(colors[index], item.category);
+                card.innerHTML = '<span>' + item.name + '</span><strong>' + distances[index].toFixed(2) + ' km</strong>';
+                card.addEventListener('click', function () {
+                    distanceVisible[index] = !distanceVisible[index];
+                    distanceChart.data.datasets[0].data = distances.map(function (value, i) { return distanceVisible[i] ? value : 0; });
+                    distanceChart.update();
+                    card.classList.toggle('is-hidden', !distanceVisible[index]);
+                });
+                distanceLegend.appendChild(card);
+            });
+        })
+        .catch(function (error) { console.error('Erro ao carregar dados dos gráficos:', error); });
+});
+</script>
+{% endblock %}

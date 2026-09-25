@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}iFit+ - Ranking{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <h3>Quadro de Líderes</h3>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-small {% if filter == 'todas' %}btn-primary{% else %}btn-cancel{% endif %}" onclick="window.location.href='{{ url_for('quadro_lideres', categoria='todas') }}'">
+                Todas
+            </button>
+
+            {% for key, value in categories.items() %}
+                <button
+                    type="button"
+                    class="btn btn-small ranking-category-filter {% if filter == key %}is-active{% endif %}"
+                    style="--activity-color: {{ value['color'] }};"
+                    onclick="window.location.href='{{ url_for('quadro_lideres', categoria=key) }}'">
+                    {{ value['name'] }}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card-body">
+        {% set user_position = None %}
+
+        {% for entry in ranking %}
+            {% if loop.index <= 99 %}
+                <div class="ranking-card">
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                        <div style="position: relative; display: inline-block; flex-shrink: 0;">
+                            {% if entry.user.photo %}
+                                <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); overflow: hidden;">
+                                    <img src="{{ url_for('static', filename='images/user_images/' + entry.user.photo) }}" alt="{{ entry.user.display_name }}" style="width:100%; height:100%; object-fit:cover;">
+                                </div>
+                            {% else %}
+                                <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; background: var(--bg-page); overflow: hidden;">
+                                    <img src="{{ url_for('static', filename='images/user_default.ico') }}"
+                                        alt="Usuário"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            {% endif %}
+
+                            <div class="level-badge" style="position: absolute; bottom: -4px; right: -4px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-surface);">
+                                #{{ entry.position }}
+                            </div>
+                        </div>
+
+                        <div class="ranking-info">
+                            <div class="ranking-name">{{ entry.user.display_name }}</div>
+                            <div class="ranking-username">@{{ entry.user.username }}</div>
+                            <div class="ranking-stats">
+                                Treinos: {{ entry.total_activities }}
+                                <span class="ranking-separator">•</span>
+                                {{ entry.total_duration }} min
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if entry.rank_badge %}
+                        <div class="ranking-patent" title="{{ entry.rank_badge.rank }}">
+                            <img
+                                src="{{ url_for('static', filename='patentes/' ~ entry.rank_badge.badge) }}"
+                                alt="Insígnia {{ entry.rank_badge.rank }}">
+                            <span>{{ entry.rank_badge.rank }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div style="text-align: right; flex-shrink: 0;">
+                        <div style="font-weight: 700; color: var(--accent); font-size: 1.2rem;">
+                            {{ entry.total_distance }} km
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            Distância Total
+                        </div>
+                    </div>
+
+                    {% if entry.user.id == user.id %}
+                        <span class="badge-voce">Você</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if entry.user.id == user.id %}
+                {% set user_position = loop.index %}
+            {% endif %}
+        {% endfor %}
+
+        {% if user_position and user_position > 99 and current_entry %}
+            <div class="ranking-card" style="border: 2px solid var(--accent); background: var(--accent-light);">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                    <div style="position: relative; display: inline-block; flex-shrink: 0;">
+                        {% if user.photo %}
+                            <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); overflow: hidden;">
+                                <img src="{{ url_for('static', filename='images/user_images/' + user.photo) }}" alt="{{ user.display_name }}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                        {% else %}
+                            <div class="avatar-small" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; background: var(--bg-page); overflow: hidden;">
+                                <img src="{{ url_for('static', filename='images/user_default.ico') }}"
+                                    alt="Usuário"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        {% endif %}
+
+                        <div class="level-badge" style="position: absolute; bottom: -4px; right: -4px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: white; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg-surface);">
+                            99+
+                        </div>
+                    </div>
+
+                    <div class="ranking-info">
+                        <div class="ranking-name">{{ user.display_name }}</div>
+                        <div class="ranking-username">@{{ user.username }}</div>
+                        <div class="ranking-stats">
+                            Treinos: {{ current_entry.total_activities }}
+                            <span class="ranking-separator">•</span>
+                            {{ current_entry.total_duration }} min
+                        </div>
+                    </div>
+                </div>
+
+                {% if current_entry.rank_badge %}
+                    <div class="ranking-patent" title="{{ current_entry.rank_badge.rank }}">
+                        <img
+                            src="{{ url_for('static', filename='patentes/' ~ current_entry.rank_badge.badge) }}"
+                            alt="Insígnia {{ current_entry.rank_badge.rank }}">
+                        <span>{{ current_entry.rank_badge.rank }}</span>
+                    </div>
+                {% endif %}
+
+                <div style="text-align: right; flex-shrink: 0;">
+                    <div style="font-weight: 700; color: var(--accent); font-size: 1.2rem;">
+                        {{ current_entry.total_distance }} km
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        Distância Total
+                    </div>
+                </div>
+
+                <span class="badge-voce">Você</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

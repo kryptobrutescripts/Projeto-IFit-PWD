@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}iFit+ - Participar de Grupo{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="card-header">
+        <h3>Participar de Grupo</h3>
+        <a href="{{ url_for('painel_grupos') }}" class="nav-link">← Voltar</a>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="form-group">
+                <label>Selecionar Grupo</label>
+                <select name="group_id" class="form-control" required>
+                    <option value="">Selecione</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }} ({{ group.members|length }} membros)</option>
+                    {% else %}
+                        <option value="" disabled>Nenhum grupo disponível para participar</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success" style="width:100%;" {% if not groups %}disabled{% endif %}>
+                Participar
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

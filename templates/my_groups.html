@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}iFit+ - Meus Grupos{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="card">
+    <div class="card-header">
+        <h3>Meus Grupos</h3>
+        <a href="{{ url_for('painel_grupos') }}" class="nav-link">← Voltar</a>
+    </div>
+    <div class="card-body">
+        {% if groups %}
+            {% for group in groups %}
+                <div class="ranking-card">
+                    <div class="ranking-info">
+                        <div class="ranking-name">{{ group.name }}</div>
+                        <div class="ranking-username">{{ group.description or 'Sem descrição' }}</div>
+                        <div class="ranking-stats">
+                            {{ group.members|length }} Membros
+                            <span class="ranking-separator">•</span>
+                            Criado por: {{ group.creator.display_name }}
+                        </div>
+                    </div>
+                    <a href="{{ url_for('grupo_membros', group_id=group.id) }}" class="btn btn-primary btn-small">
+                        Ver Membros
+                    </a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-message">
+                <span class="empty-icon"></span>
+                Você não participa de nenhum grupo
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

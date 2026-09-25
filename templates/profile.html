@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}IFit+ - Perfil{% endblock %}
+{% block content %}
+{% include "components/navbar.html" %}
+<div class="card profile-card">
+    <div class="card-header text-center">
+        <h2>Meu Perfil</h2>
+    </div>
+    <div class="card-body">
+        <div class="profile-avatar-wrapper text-center">
+            <div class="level-avatar-wrapper">
+                {% if user.photo %}
+                    <div class="avatar-large level-avatar mx-auto">
+                        <img src="{{ url_for('static', filename='images/user_images/' + user.photo) }}" alt="Foto de perfil">
+                    </div>
+                {% else %}
+                    <div class="avatar-large level-avatar placeholder mx-auto" style="overflow: hidden;">
+                        <img src="{{ url_for('static', filename='images/user_default.ico') }}"
+                            alt="Usuário"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                {% endif %}
+                <div class="level-badge">#{{ user_position if user_position else '?' }}</div>
+            </div>
+            <div class="profile-actions-row">
+                <form action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data" class="upload-form">
+                    <div class="file-input-wrapper">
+                        <input type="file" name="photo" accept="image/*" id="photoInput" required>
+                        <label for="photoInput" class="file-label">Escolher Arquivo</label>
+                        <span class="file-name" id="fileName">Nenhum arquivo escolhido</span>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-small">Enviar</button>
+                </form>
+                {% if user.photo %}
+                <form action="{{ url_for('remove_photo') }}" method="POST" id="formRemoverFoto" class="remove-photo-form">
+                    <button type="button" class="btn btn-danger-strong btn-small" onclick="abrirModalRemoverFoto()">
+                        Remover
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="profile-info-grid">
+            <div class="profile-info-item">
+                <label>Nome de Usuário</label>
+                <p class="profile-value">{{ user.username }}</p>
+            </div>
+            <div class="profile-info-item">
+                <label>E-mail</label>
+                <p class="profile-value">{{ user.email }}</p>
+            </div>
+            <div class="profile-info-item">
+                <label>Nome de Exibição</label>
+                <p class="profile-value">{{ user.display_name }}</p>
+            </div>
+            <div class="profile-info-item">
+                <label>Data de Nascimento</label>
+                <p class="profile-value">{{ user.birth_date }}</p>
+            </div>
+            <div class="profile-info-item">
+                <label>Gênero</label>
+                <p class="profile-value">{{ user.gender }}</p>
+            </div>
+            <div class="profile-info-item">
+                <label>Posição no Ranking</label>
+                <p class="profile-value">#{{ user_position if user_position else '?' }}</p>
+            </div>
+        </div>
+        <div class="text-center profile-actions">
+            <button class="btn btn-primary" onclick="abrirModalEditarPerfil()">
+                Editar Perfil
+            </button>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="modalEditarPerfil">
+    <div class="modal-box modal-large">
+        <h3 class="modal-title">Editar Perfil</h3>
+        <form action="{{ url_for('update_profile') }}" method="POST">
+            <div class="form-group">
+                <label>Nome de Exibição</label>
+                <input type="text" name="display_name" class="form-control" value="{{ user.display_name }}" required>
+                {% if not can_change_display_name %}
+                    <small class="form-helper form-helper-danger">Você só pode mudar o nome de exibição 2 vezes por dia</small>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>Data de Nascimento</label>
+                <input type="date" name="birth_date" class="form-control" value="{{ user.birth_date }}" required>
+            </div>
+            <div class="form-group">
+                <label>Gênero</label>
+                <select name="gender" class="form-control" required>
+                    <option value="Masculino" {% if user.gender == 'Masculino' %}selected{% endif %}>Masculino</option>
+                    <option value="Feminino" {% if user.gender == 'Feminino' %}selected{% endif %}>Feminino</option>
+                    <option value="Outro" {% if user.gender == 'Outro' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nome de Usuário</label>
+                <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                {% if not can_change_username %}
+                    <small class="form-helper form-helper-danger">Você só pode mudar o nome de usuário uma vez por semana</small>
+                {% endif %}
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="fecharModalEditarPerfil()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" {% if not can_change_display_name %}disabled{% endif %}>
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="modal-overlay" id="modalNomeUsuario">
+    <div class="modal-box">
+        <h3 class="modal-title">Alterar Nome de Usuário</h3>
+        <p class="modal-message">Nome de usuário inválido</p>
+        <form action="{{ url_for('change_username') }}" method="POST">
+            <div class="form-group">
+                <input type="text" name="new_username" class="form-control" placeholder="novo_usuario" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="fecharModalNomeUsuario()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Alterar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="modal-overlay" id="modalRemoverFoto">
+    <div class="modal-box">
+        <h3 class="modal-title">Remover Foto</h3>
+        <p class="modal-message">Tem certeza que deseja remover sua foto de perfil?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" onclick="fecharModalRemoverFoto()">Cancelar</button>
+            <button type="button" class="btn btn-danger-strong" onclick="confirmarRemoverFoto()">Remover</button>
+        </div>
+    </div>
+</div>
+<div class="card profile-card">
+    <div class="card-header text-center">
+        <h3>Alterar Senha</h3>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('change_password') }}" method="POST" class="password-form">
+            <div class="form-group">
+                <label>Senha Atual</label>
+                <input type="password" name="current_password" class="form-control" placeholder="********" required>
+            </div>
+            <div class="form-group">
+                <label>Nova Senha</label>
+                <input type="password" name="new_password" class="form-control" placeholder="********" required>
+            </div>
+            <div class="form-group">
+                <label>Confirmar Nova Senha</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="********" required>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Confirmar Alteração</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

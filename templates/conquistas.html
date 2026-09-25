@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}IFit+ - Conquistas{% endblock %}
+
+{% block content %}
+{% include "components/navbar.html" %}
+
+<div class="achievements-page">
+    <section class="achievements-hero">
+        <div>
+            <h1>Patentes e Conquistas</h1>
+            <p>Avance em cada modalidade conforme acumula atividades. Cada patente possui cinco divisões, e os requisitos aumentam conforme você evolui.</p>
+        </div>
+    </section>
+
+    <div class="rank-ladder" aria-label="Progressão de patentes">
+        <div class="rank-ladder-title">Progressão</div>
+        <div class="rank-ladder-items">
+            <span class="rank-step rank-recruta">Recruta I–V</span>
+            <span class="rank-arrow">→</span>
+            <span class="rank-step rank-veterano">Veterano I–V</span>
+            <span class="rank-arrow">→</span>
+            <span class="rank-step rank-elite">Elite I–V</span>
+            <span class="rank-arrow">→</span>
+            <span class="rank-step rank-pro">Pro I–V</span>
+            <span class="rank-arrow">→</span>
+            <span class="rank-step rank-mestre">Mestre I–V</span>
+            <span class="rank-arrow">→</span>
+            <span class="rank-step rank-lendario">Lendário</span>
+        </div>
+    </div>
+
+    {% if conquistas %}
+        <div class="master-all-info">
+            <img src="{{ url_for('static', filename='patentes/mestre_todas.png') }}" alt="Insígnia Mestre em todas as modalidades">
+            <div>
+                <strong>Insígnia especial</strong>
+                <span>Conquiste pelo menos Mestre I em todas as modalidades para desbloquear esta insígnia.</span>
+            </div>
+        </div>
+
+        <div class="achievements-grid">
+            {% for item in conquistas %}
+                <article class="achievement-card" style="--achievement-color: {{ item.cor }}; --rank-color: {{ item.color }};">
+                    <div class="achievement-header">
+                        <div class="achievement-badge">
+                            {% if item.badge %}
+                                <img
+                                    src="{{ url_for('static', filename='patentes/' ~ item.badge) }}"
+                                    alt="Insígnia {{ item.rank }}{% if item.division %} {{ item.division }}{% endif %}"
+                                >
+                            {% else %}
+                                <span class="achievement-badge-locked">—</span>
+                            {% endif %}
+                        </div>
+                        <div class="achievement-title">
+                            <h2>{{ item.nome_categoria }}</h2>
+                            <span class="achievement-level">{{ item.rank }}{% if item.division %} {{ item.division }}{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <div class="achievement-rank-name">
+                        <span>Patente atual</span>
+                        <strong>{{ item.rank }}{% if item.division %} {{ item.division }}{% endif %}</strong>
+                    </div>
+
+                    <p class="achievement-total">
+                        <strong>{{ item.total }}</strong> atividade{% if item.total != 1 %}s{% endif %} realizada{% if item.total != 1 %}s{% endif %} em {{ item.nome_categoria }}.
+                    </p>
+
+                    {% if item.next %}
+                        <div class="achievement-progress-meta">
+                            <span>Progresso para {{ item.next }}</span>
+                            <strong>{{ item.progress }}%</strong>
+                        </div>
+                        <div class="achievement-progress" role="progressbar" aria-valuenow="{{ item.progress }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="achievement-progress-bar" style="width: {{ item.progress }}%;"></div>
+                        </div>
+                        <p class="achievement-next">
+                            Faltam <strong>{{ item.remaining }}</strong> atividade{% if item.remaining != 1 %}s{% endif %} para <strong>{{ item.next }}</strong>.
+                        </p>
+                    {% else %}
+                        <div class="achievement-progress-meta">
+                            <span>Patente máxima</span>
+                            <strong>100%</strong>
+                        </div>
+                        <div class="achievement-progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            <div class="achievement-progress-bar" style="width: 100%;"></div>
+                        </div>
+                        <p class="achievement-max">Você alcançou a patente máxima desta modalidade.</p>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card achievements-empty">
+            <div class="card-body">
+                <h2>Nenhuma modalidade disponível</h2>
+                <p>Cadastre uma atividade física para começar sua progressão.</p>
+                <a href="{{ url_for('cadastro_atividade') }}" class="btn btn-primary">Cadastrar atividade</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

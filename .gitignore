@@ -1,0 +1,87 @@
+# =========================================================
+# IFit+ - Git Ignore
+# Python / Flask / SQLite
+# =========================================================
+
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# -------------------------
+# Virtual environments
+# -------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# -------------------------
+# Environment variables
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Flask
+# -------------------------
+instance/
+.flaskenv
+
+# -------------------------
+# SQLite / local databases
+# -------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# -------------------------
+# User-uploaded files
+# -------------------------
+# Fotos enviadas pelos usuários
+static/images/user_images/*
+!static/images/user_images/.gitkeep
+
+# -------------------------
+# IDE / Editors
+# -------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# -------------------------
+# Operating system
+# -------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# -------------------------
+# Logs
+# -------------------------
+*.log
+logs/
+
+# -------------------------
+# Testing / Coverage
+# -------------------------
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# -------------------------
+# Temporary files
+# -------------------------
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo

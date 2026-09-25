@@ -1,0 +1,15 @@
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="navbar-brand">IFit+</a>
+    <div class="navbar-menu">
+        <span class="navbar-user">{{ user.display_name.split()[0] }}</span>
+        <a href="{{ url_for('home') }}" class="nav-link{% if request.path in ['/', '/dashboard'] %} active{% endif %}">Dashboard</a>
+        <a href="{{ url_for('profile') }}" class="nav-link{% if request.path in ['/profile', '/perfil'] %} active{% endif %}">Perfil</a>
+        <a href="{{ url_for('estatisticas') }}" class="nav-link{% if request.path == '/estatisticas' %} active{% endif %}">Estatísticas</a>
+        <a href="{{ url_for('painel_grupos') }}" class="nav-link{% if request.path.startswith('/painel_grupos') or request.path.startswith('/grupos') or request.path.startswith('/criar_grupo') or request.path.startswith('/associar_grupo') or request.path.startswith('/meus_grupos') or request.path.startswith('/grupo/') %} active{% endif %}">Grupos</a>
+        <a href="{{ url_for('quadro_lideres') }}" class="nav-link{% if request.path == '/quadro_lideres' %} active{% endif %}">Ranking</a>
+        <a href="{{ url_for('conquistas') }}" class="nav-link{% if request.path == '/conquistas' %} active{% endif %}">Conquistas</a>
+        <form action="{{ url_for('logout') }}" method="POST" class="logout-form">
+            <button type="submit" class="nav-link logout-link">Sair</button>
+        </form>
+    </div>
+</nav>
